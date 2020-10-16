@@ -55,7 +55,7 @@ public class FileChooser implements LifecycleObserver {
         new AsyncTask<Void, Void, ArrayList<FileModel>>() {
             @Override
             protected ArrayList<FileModel> doInBackground(Void... voids) {
-                if (fileFolder.listFiles() != null)
+                if (fileFolder.listFiles() == null)
                     return new ArrayList<>();
 
                 return FileUtils.filesToModel(fileFolder.listFiles());
@@ -63,6 +63,9 @@ public class FileChooser implements LifecycleObserver {
 
             @Override
             protected void onPostExecute(ArrayList<FileModel> list) {
+                Log.e("size",list.size()+"");
+                Log.e("FileChooser",FileChooser.this.list.size()+"");
+
                 boolean hasNewFile = FileChooser.this.list.size() < list.size();
                 FileChooser.this.list = list;
 

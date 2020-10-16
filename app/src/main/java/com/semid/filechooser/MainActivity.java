@@ -1,6 +1,7 @@
 package com.semid.filechooser;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
         FileChooser.Listener listener = new FileChooser.Listener() {
             @Override
             public void newFile(ArrayList<FileModel> files, FileModel fileModel) {
+                Log.e("files", files.size() + "");
                 adapter.updateList(files);
             }
         };
