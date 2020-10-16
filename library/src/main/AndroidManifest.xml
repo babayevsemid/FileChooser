@@ -5,6 +5,6 @@
 
     <application
         android:requestLegacyExternalStorage="true"
-        tools:targetApi="q"></application>
+        tools:targetApi="q" />
 
 </manifest>

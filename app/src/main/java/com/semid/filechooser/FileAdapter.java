@@ -1,12 +1,15 @@
 package com.semid.filechooser;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.semid.filechooser.databinding.ItemFileBinding;
 import com.semid.library.FileModel;
 
@@ -43,6 +46,11 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ItemHolder> {
         return list.size();
     }
 
+    public void removeItem(int position){
+        list.remove(position);
+        notifyItemRemoved(position);
+    }
+
     public void updateList(List<FileModel> list) {
         this.list = list;
         notifyDataSetChanged();
@@ -57,7 +65,10 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ItemHolder> {
             this.binding = binding;
         }
 
-        void bind(FileModel model) {
+        void bind(final FileModel model) {
+            Glide.with(context)
+                    .load(model.getFile())
+                    .into(binding.coverImg);
 
             switch (model.getFileType()) {
                 case PHOTO:
@@ -67,10 +78,20 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ItemHolder> {
                     binding.typeBtn.setImageResource(R.drawable.ic_video);
                     break;
             }
+
+            binding.getRoot().setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    Log.e("onLongClick", model.getPath());
+
+                    listener.onDelete(model);
+                    return false;
+                }
+            });
         }
     }
 
     public interface Listener {
-        void onDelete(File file);
+        void onDelete(FileModel fileModel);
     }
 }

@@ -8,6 +8,7 @@ import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.loader.content.CursorLoader;
@@ -25,14 +26,14 @@ import java.util.Locale;
 public class FileUtils {
     public static Uri getNewFileUri(Context context, String endWith) {
         final String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        File file = new File(FileFolder.getBaseFolder(context) + "/" + timeStamp + "." + endWith);
-
+        File file = new File(FileFolder.getChildFolder(context) + "/" + timeStamp + "." + endWith);
+        Log.e("getNewFileUri",file+"");
         return Uri.fromFile(file);
     }
 
     public static File getNewFilePath(Context context, String endWith) {
         final String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        File file = new File(FileFolder.getBaseFolder(context) + "/" + timeStamp + "." + endWith);
+        File file = new File(FileFolder.getChildFolder(context) + "/" + timeStamp + "." + endWith);
 
         return file;
     }

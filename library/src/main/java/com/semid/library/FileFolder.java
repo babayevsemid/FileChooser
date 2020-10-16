@@ -11,8 +11,15 @@ public class FileFolder {
 
     }
 
-    public static File getBaseFolder(Context context){
+    public static File getBaseFolder(Context context) {
         File folder = new File(context.getExternalCacheDir(), getApplicationName(context));
+        folder.mkdirs();
+
+        return folder;
+    }
+
+    public static File getChildFolder(Context context) {
+        File folder = new File(getBaseFolder(context), context.getClass().getSimpleName());
         folder.mkdirs();
 
         return folder;

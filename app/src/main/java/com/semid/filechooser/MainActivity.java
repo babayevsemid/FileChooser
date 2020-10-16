@@ -1,5 +1,6 @@
 package com.semid.filechooser;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -10,10 +11,10 @@ import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.semid.filechooser.databinding.ActivityMainBinding;
 import com.semid.library.FileChooser;
+import com.semid.library.FileListener;
 import com.semid.library.FileModel;
 import com.semid.library.enums.ChooseTypeEnum;
 
-import java.io.File;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,6 +26,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
+        binding.takePhoto.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), Test.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+
+                return false;
+            }
+        });
         initAdapter();
         init();
     }
@@ -32,8 +43,9 @@ public class MainActivity extends AppCompatActivity {
     private void initAdapter() {
         adapter = new FileAdapter(getApplicationContext(), new FileAdapter.Listener() {
             @Override
-            public void onDelete(File file) {
-
+            public void onDelete(FileModel model) {
+                FileChooser.getInstance()
+                        .deleteFile(model);
             }
         });
         binding.recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
@@ -41,34 +53,50 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
-        FileChooser.Listener listener = new FileChooser.Listener() {
+        FileListener listener = new FileListener() {
             @Override
             public void newFile(ArrayList<FileModel> files, FileModel fileModel) {
-                Log.e("files", files.size() + "");
                 adapter.updateList(files);
+            }
+
+            @Override
+            public void onChanged(ArrayList<FileModel> files) {
+                Log.e("onChanged", "Sd");
+            }
+
+            @Override
+            public void deletedFile(boolean isVideo, FileModel fileModel, int position) {
+                Log.e("deletedFile", "Sd");
+
+                adapter.removeItem(position);
+            }
+
+            @Override
+            public void deletedAllFiles() {
+                Log.e("deletedAllFiles", "Beli");
             }
         };
 
-        FileChooser chooser = FileChooser.getInstance(this);
-        chooser.setListener(listener);
+        FileChooser chooser = FileChooser.getInstance();
+        chooser.addListener(listener);
     }
 
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.choosePhoto:
-                FileChooser.getInstance(this)
+                FileChooser.getInstance()
                         .intent(ChooseTypeEnum.CHOOSE_PHOTO);
                 break;
             case R.id.chooseVideo:
-                FileChooser.getInstance(this)
+                FileChooser.getInstance()
                         .intent(ChooseTypeEnum.CHOOSE_VIDEO);
                 break;
             case R.id.takePhoto:
-                FileChooser.getInstance(this)
+                FileChooser.getInstance()
                         .intent(ChooseTypeEnum.TAKE_PHOTO);
                 break;
             case R.id.takeVideo:
-                FileChooser.getInstance(this)
+                FileChooser.getInstance()
                         .intent(ChooseTypeEnum.TAKE_VIDEO);
                 break;
         }

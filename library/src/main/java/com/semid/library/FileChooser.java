@@ -1,48 +1,83 @@
 package com.semid.library;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.Application;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 
 import com.semid.library.enums.ChooseTypeEnum;
+import com.semid.library.enums.FileTypeEnum;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.ListIterator;
 
 @SuppressLint({"StaticFieldLeak", "SimpleDateFormat"})
 public class FileChooser implements LifecycleObserver {
     private static FileChooser instance;
-    private AppCompatActivity activity;
-    private Listener listener;
+    private static AppCompatActivity activity;
 
     private File fileFolder;
-    private ArrayList<FileModel> list = new ArrayList<>();
+
+    private List<FileListener> listeners = new ArrayList<>();
+    private List<AppCompatActivity> activities = new ArrayList<>();
+
+    private ArrayList<FileModel> chooseList = new ArrayList<>();
+    private ArrayList<FileModel> takeList = new ArrayList<>();
+    private ArrayList<FileModel> totalList = new ArrayList<>();
+
+    public static FileChooser getInstance() {
+        if (instance == null) {
+            instance = new FileChooser();
+        }
+
+        if (!instance.activities.contains(activity))
+            instance.activities.add(activity);
+
+        instance.start();
+        return instance;
+    }
 
     private FileChooser() {
 
     }
 
-    public static FileChooser getInstance(AppCompatActivity activity) {
-        if (instance == null)
-            instance = new FileChooser();
+    private void start() {
+        fileFolder = FileFolder.getChildFolder(activity);
 
-        instance.setActivity(activity);
-        return instance;
+        activity.getLifecycle()
+                .addObserver(this);
     }
 
-    private void setActivity(AppCompatActivity activity) {
-        this.activity = activity;
+    public static void setup(final Application application) {
+        application.registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
+            @Override
+            public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle bundle) {
+                if (activity instanceof AppCompatActivity)
+                    FileChooser.activity = (AppCompatActivity) activity;
+            }
 
-        activity.getLifecycle().addObserver(this);
+            @Override
+            public void onActivityResumed(@NonNull Activity activity) {
+                if (activity instanceof AppCompatActivity)
+                    FileChooser.activity = (AppCompatActivity) activity;
+            }
+        });
+    }
 
-        fileFolder = FileFolder.getBaseFolder(activity.getApplicationContext());
+    public ArrayList<FileModel> getList() {
+        return totalList;
     }
 
     public void intent(ChooseTypeEnum chooseType) {
@@ -50,7 +85,7 @@ public class FileChooser implements LifecycleObserver {
         fragment.show(activity.getSupportFragmentManager(), null);
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     private void checkNewFile() {
         new AsyncTask<Void, Void, ArrayList<FileModel>>() {
             @Override
@@ -63,15 +98,28 @@ public class FileChooser implements LifecycleObserver {
 
             @Override
             protected void onPostExecute(ArrayList<FileModel> list) {
-                Log.e("size",list.size()+"");
-                Log.e("FileChooser",FileChooser.this.list.size()+"");
+                boolean hasNewFile = takeList.size() < list.size();
+                boolean listChanged = takeList.size() != list.size();
+                takeList = list;
 
-                boolean hasNewFile = FileChooser.this.list.size() < list.size();
-                FileChooser.this.list = list;
+                for (FileModel model : list) {
+                    if (!totalList.contains(new FileModel(model.getPath()))) {
+                        totalList.add(0, model);
+                    }
+                }
+
+                Log.e("listChanged", list.size() + "");
+//
+//                totalList = new ArrayList<>();
+//                totalList.addAll(takeList);
+//                totalList.addAll(chooseList);
+
+
+                if (listChanged)
+                    getListener().onChanged(totalList);
 
                 if (list.size() > 0 && hasNewFile) {
-                    listener.onChanged(list);
-                    listener.newFile(list, list.get(0));
+                    getListener().newFile(totalList, totalList.get(0));
                 }
             }
         }.execute();
@@ -79,7 +127,7 @@ public class FileChooser implements LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private void s() {
-        Log.e("paus", "-as");
+
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
@@ -109,44 +157,61 @@ public class FileChooser implements LifecycleObserver {
 
             @Override
             protected void onPostExecute(Void aVoid) {
-                list = new ArrayList<>();
-                listener.onChanged(list);
-                listener.deletedAllFiles();
+                totalList = new ArrayList<>();
+                takeList = new ArrayList<>();
+                chooseList = new ArrayList<>();
+
+                getListener().onChanged(totalList);
+                getListener().deletedAllFiles();
             }
         }.execute();
     }
 
-    public void deleteFile(final File file) {
-        new AsyncTask<File, Void, File>() {
+    private FileListener getListener() {
+        int activityIndex = activities.indexOf(activity);
+        return listeners.get(activityIndex);
+    }
+
+    public void deleteFile(final FileModel fileModel) {
+        new AsyncTask<Void, Void, Void>() {
             @Override
-            protected File doInBackground(File... files) {
-                files[0].delete();
-                return files[0];
+            protected Void doInBackground(Void... files) {
+                if (fileModel.getPath().contains("/cache/"))
+                    fileModel.getFile().delete();
+                return null;
             }
 
             @Override
-            protected void onPostExecute(File file) {
-                list.remove(file);
-                listener.onChanged(list);
-                listener.deletedFile(file.getAbsolutePath().endsWith("mp4"), FileUtils.fileToModel(file));
+            protected void onPostExecute(Void file) {
+                int index = totalList.indexOf(fileModel);
+
+                if (totalList.contains(file))
+                    totalList.remove(file);
+
+                if (takeList.contains(file))
+                    takeList.remove(file);
+
+                if (chooseList.contains(file))
+                    chooseList.remove(file);
+
+                getListener().onChanged(totalList);
+                getListener().deletedFile(fileModel.getFileType() == FileTypeEnum.VIDEO, fileModel, index);
             }
-        }.execute(file);
+        }.execute();
     }
 
-    public void setListener(Listener listener) {
-        this.listener = listener;
+    public void addFileChoose(String path) {
+        if (totalList.contains(FileUtils.fileToModel(new File(path))))
+            return;
+
+        totalList.add(0, FileUtils.fileToModel(new File(path)));
+        chooseList.add(0, FileUtils.fileToModel(new File(path)));
+
+        getListener().onChanged(totalList);
+        getListener().newFile(totalList, totalList.get(0));
     }
 
-    public static abstract class Listener {
-        public abstract void newFile(ArrayList<FileModel> files, FileModel fileModel);
-
-        public void onChanged(ArrayList<FileModel> files) {
-        }
-
-        public void deletedFile(boolean isVideo, FileModel fileModel) {
-        }
-
-        public void deletedAllFiles() {
-        }
+    public void addListener(FileListener listener) {
+        listeners.add(listener);
     }
 }

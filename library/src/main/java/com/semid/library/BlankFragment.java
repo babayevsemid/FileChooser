@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
 import com.semid.library.enums.ChooseTypeEnum;
@@ -97,48 +98,18 @@ public class BlankFragment extends DialogFragment {
     }
 
     private void choosePhotoResult(Intent data) {
-        Bitmap bitmap = getBitmap(getContext(), data.getData(), 0);
-
-        if (bitmap == null)
-            return;
-
-        try {
-            FileOutputStream fos = new FileOutputStream(getNewFilePath(getContext(), "jpg").getPath());
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-            fos.close();
-        } catch (Exception ignored) {
-        }
+        FileChooser.getInstance()
+                .addFileChoose(getPath(data.getData()));
     }
 
     private void chooseVideoResult(Intent data) {
-        Log.e("data",data.toString());
-
-        Uri uri=data.getData();
-        String path = getPath(uri);
-        File newFile = getNewFilePath(getContext(), "mp4");
-        newFile.mkdirs();
-
-        try {
-            InputStream in = new FileInputStream(path);
-            OutputStream out = new FileOutputStream(newFile);
-
-            byte[] buf = new byte[1024];
-            int len;
-
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-
-            in.close();
-            out.close();
-        }catch (Exception e){
-            Log.e("e",e.toString());
-        }
+        FileChooser.getInstance()
+                .addFileChoose(getPath(data.getData()));
     }
 
     // UPDATED!
     public String getPath(Uri uri) {
-        String[] projection = { MediaStore.Video.Media.DATA };
+        String[] projection = {MediaStore.Video.Media.DATA};
         Cursor cursor = getActivity().getContentResolver().query(uri, projection, null, null, null);
         if (cursor != null) {
             // HERE YOU WILL GET A NULLPOINTER IF CURSOR IS NULL
