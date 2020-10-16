@@ -15,6 +15,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.semid.library.enums.ChooseTypeEnum;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -26,9 +28,9 @@ import static com.semid.library.FileUtils.getBitmap;
 import static com.semid.library.FileUtils.getNewFilePath;
 
 public class BlankFragment extends DialogFragment {
-    private ChooseType type = ChooseType.CHOOSE_PHOTO;
+    private ChooseTypeEnum type = ChooseTypeEnum.CHOOSE_PHOTO;
 
-    public static BlankFragment newInstance(ChooseType type) {
+    public static BlankFragment newInstance(ChooseTypeEnum type) {
         Bundle bundle = new Bundle();
         bundle.putInt("type", type.id);
 
@@ -41,7 +43,7 @@ public class BlankFragment extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         if (getArguments() != null)
-            type = ChooseType.byId(getArguments().getInt("type"));
+            type = ChooseTypeEnum.byId(getArguments().getInt("type"));
 
         return inflater.inflate(R.layout.fragment_blank, container, false);
     }

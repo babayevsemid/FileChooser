@@ -1,20 +1,20 @@
 package com.semid.library;
 
 import android.annotation.SuppressLint;
-import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 
+import com.semid.library.enums.ChooseTypeEnum;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.ListIterator;
 
 @SuppressLint({"StaticFieldLeak", "SimpleDateFormat"})
 public class FileChooser implements LifecycleObserver {
@@ -23,6 +23,7 @@ public class FileChooser implements LifecycleObserver {
     private Listener listener;
 
     private File fileFolder;
+    private ArrayList<FileModel> list = new ArrayList<>();
 
     private FileChooser() {
 
@@ -44,87 +45,105 @@ public class FileChooser implements LifecycleObserver {
         fileFolder = FileFolder.getBaseFolder(activity.getApplicationContext());
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    private void checkNewFile() {
-        new AsyncTask<Void, Void, List<File>>() {
-            @Override
-            protected List<File> doInBackground(Void... voids) {
-//                FileIntentUtil.checkNewFile();
+    public void intent(ChooseTypeEnum chooseType) {
+        BlankFragment fragment = BlankFragment.newInstance(chooseType);
+        fragment.show(activity.getSupportFragmentManager(), null);
+    }
 
-                if (fileFolder.listFiles() == null)
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    private void checkNewFile() {
+        new AsyncTask<Void, Void, ArrayList<FileModel>>() {
+            @Override
+            protected ArrayList<FileModel> doInBackground(Void... voids) {
+                if (fileFolder.listFiles() != null)
                     return new ArrayList<>();
 
-                return new ArrayList<>(Arrays.asList(fileFolder.listFiles()));
+                return FileUtils.filesToModel(fileFolder.listFiles());
             }
 
             @Override
-            protected void onPostExecute(List<File> list) {
-                Log.e("list", list.size() + "");
+            protected void onPostExecute(ArrayList<FileModel> list) {
+                boolean hasNewFile = FileChooser.this.list.size() < list.size();
+                FileChooser.this.list = list;
 
-                if (list.size() > 0) {
-                    listener.newFile(ChooseType.CHOOSE_PHOTO, list.get(list.size() - 1), list.get(list.size() - 1).getPath(), null);
+                if (list.size() > 0 && hasNewFile) {
+                    listener.onChanged(list);
+                    listener.newFile(list, list.get(0));
                 }
             }
         }.execute();
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private void s() {
         Log.e("paus", "-as");
     }
 
-    public void intent(ChooseType chooseType) {
-        BlankFragment fragment = BlankFragment.newInstance(chooseType);
-        fragment.show(activity.getSupportFragmentManager(),null);
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    private void onCreate() {
+        deleteAllFiles();
     }
 
-//    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-//    public void deleteAllFiles() {
-//        new AsyncTask<Void, Void, Void>() {
-//            @Override
-//            protected Void doInBackground(Void... voids) {
-//                if (filesPath.listFiles() == null)
-//                    return null;
-//
-//                ListIterator<File> photoIterator = Arrays.asList(filesPath.listFiles()).listIterator();
-//
-//                while (photoIterator.hasNext()) {
-//                    photoIterator.next().delete();
-//                }
-//                return null;
-//            }
-//
-//            @Override
-//            protected void onPostExecute(Void aVoid) {
-//                refreshData();
-//            }
-//        }.execute();
-//    }
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    private void onDestroy() {
+        deleteAllFiles();
+    }
 
+    public void deleteAllFiles() {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                if (fileFolder.listFiles() == null)
+                    return null;
 
-//    public void deleteFile(String path) {
-//        new AsyncTask<Void, Void, Void>() {
-//            @Override
-//            protected Void doInBackground(Void... voids) {
-//                new File(path).delete();
-//                return null;
-//            }
-//
-//            @Override
-//            protected void onPostExecute(Void aVoid) {
-//                refreshData();
-//            }
-//        }.execute();
-//    }
+                ListIterator<File> photoIterator = Arrays.asList(fileFolder.listFiles()).listIterator();
 
+                while (photoIterator.hasNext()) {
+                    photoIterator.next().delete();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                list = new ArrayList<>();
+                listener.onChanged(list);
+                listener.deletedAllFiles();
+            }
+        }.execute();
+    }
+
+    public void deleteFile(final File file) {
+        new AsyncTask<File, Void, File>() {
+            @Override
+            protected File doInBackground(File... files) {
+                files[0].delete();
+                return files[0];
+            }
+
+            @Override
+            protected void onPostExecute(File file) {
+                list.remove(file);
+                listener.onChanged(list);
+                listener.deletedFile(file.getAbsolutePath().endsWith("mp4"), FileUtils.fileToModel(file));
+            }
+        }.execute(file);
+    }
 
     public void setListener(Listener listener) {
         this.listener = listener;
     }
 
     public static abstract class Listener {
-        public abstract void newFile(ChooseType chooseType, File file, String path, Bitmap bitmap);
+        public abstract void newFile(ArrayList<FileModel> files, FileModel fileModel);
+
+        public void onChanged(ArrayList<FileModel> files) {
+        }
+
+        public void deletedFile(boolean isVideo, FileModel fileModel) {
+        }
+
+        public void deletedAllFiles() {
+        }
     }
-
-
 }

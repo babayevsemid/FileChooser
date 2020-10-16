@@ -9,11 +9,17 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
 
+import androidx.annotation.Nullable;
 import androidx.loader.content.CursorLoader;
+
+import com.semid.library.enums.ChooseTypeEnum;
+import com.semid.library.enums.FileTypeEnum;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class FileUtils {
@@ -98,5 +104,45 @@ public class FileUtils {
             return result;
         } else
             return "";
+    }
+
+    public static ChooseTypeEnum getFileType(File file) {
+        String path = file.getAbsolutePath();
+        return null;
+    }
+
+    public static ArrayList<FileModel> filesToModel(@Nullable List<File> files) {
+        ArrayList<FileModel> list = new ArrayList<>();
+
+        if (files == null)
+            return list;
+
+        for (File file : files) {
+            list.add(fileToModel(file));
+        }
+
+        return list;
+    }
+
+    public static ArrayList<FileModel> filesToModel(@Nullable File[] files) {
+        ArrayList<FileModel> list = new ArrayList<>();
+
+        if (files == null)
+            return list;
+
+        for (File file : files) {
+            list.add(fileToModel(file));
+        }
+
+        return list;
+    }
+
+    public static FileModel fileToModel(File file) {
+        FileModel model = new FileModel();
+        model.setFile(file);
+        model.setPath(file.getPath());
+        model.setFileType(FileTypeEnum.byFile(file));
+
+        return model;
     }
 }
