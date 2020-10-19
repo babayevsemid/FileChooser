@@ -57,11 +57,11 @@ public class App extends Application {
 
 ``` 
 
-### Extra
+### Take video max second //100
 
 ``` 
-                FileChooser.getInstance()
-                        .intent(ChooseTypeEnum.TAKE_VIDEO);
+                 FileChooser.getInstance()
+                        .intent(ChooseTypeEnum.CHOOSE_VIDEO, 100);
         
 ```
  
