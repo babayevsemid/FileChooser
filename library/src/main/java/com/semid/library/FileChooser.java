@@ -26,7 +26,7 @@ import java.util.ListIterator;
 @SuppressLint({"StaticFieldLeak", "SimpleDateFormat"})
 public class FileChooser implements LifecycleObserver {
     private static FileChooser instance;
-    private static AppCompatActivity activity;
+    public static AppCompatActivity activity;
 
     private File fileFolder;
 
