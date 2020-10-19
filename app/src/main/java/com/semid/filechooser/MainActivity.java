@@ -61,19 +61,17 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onChanged(ArrayList<FileModel> files) {
-                Log.e("onChanged", "Sd");
+
             }
 
             @Override
             public void deletedFile(boolean isVideo, FileModel fileModel, int position) {
-                Log.e("deletedFile", "Sd");
-
                 adapter.removeItem(position);
             }
 
             @Override
             public void deletedAllFiles() {
-                Log.e("deletedAllFiles", "Beli");
+
             }
         };
 
@@ -89,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.chooseVideo:
                 FileChooser.getInstance()
-                        .intent(ChooseTypeEnum.CHOOSE_VIDEO);
+                        .intent(ChooseTypeEnum.CHOOSE_VIDEO,100);
                 break;
             case R.id.takePhoto:
                 FileChooser.getInstance()

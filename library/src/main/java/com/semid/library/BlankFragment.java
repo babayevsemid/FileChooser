@@ -2,34 +2,24 @@ package com.semid.library;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
 import com.semid.library.enums.ChooseTypeEnum;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import static android.app.Activity.RESULT_OK;
-import static com.semid.library.FileUtils.getBitmap;
-import static com.semid.library.FileUtils.getNewFilePath;
 
 public class BlankFragment extends DialogFragment {
     private ChooseTypeEnum type = ChooseTypeEnum.CHOOSE_PHOTO;
+    private int takeVideoLimitSecond = 30;
 
     public static BlankFragment newInstance(ChooseTypeEnum type) {
         Bundle bundle = new Bundle();
@@ -40,12 +30,22 @@ public class BlankFragment extends DialogFragment {
         return fragment;
     }
 
+    public static BlankFragment newInstance(ChooseTypeEnum type, int takeVideoLimitSecond) {
+        Bundle bundle = new Bundle();
+        bundle.putInt("type", type.id);
+        bundle.putInt("takeVideoLimitSecond", takeVideoLimitSecond);
+
+        BlankFragment fragment = new BlankFragment();
+        fragment.setArguments(bundle);
+        return fragment;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        if (getArguments() != null)
+        if (getArguments() != null) {
             type = ChooseTypeEnum.byId(getArguments().getInt("type"));
-
+            takeVideoLimitSecond = getArguments().getInt("takeVideoLimitSecond", 30);
+        }
         return inflater.inflate(R.layout.fragment_blank, container, false);
     }
 
@@ -65,7 +65,7 @@ public class BlankFragment extends DialogFragment {
                 FileIntentUtil.takePhoto(this);
                 break;
             case TAKE_VIDEO:
-                FileIntentUtil.takeVideo(this);
+                FileIntentUtil.takeVideo(this, takeVideoLimitSecond);
                 break;
             case CHOOSE_FILE:
                 break;

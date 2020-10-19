@@ -72,7 +72,7 @@ public class FileIntentUtil extends AppCompatActivity {
                 }).check();
     }
 
-    public static void takeVideo(Fragment fragment) {
+    public static void takeVideo(Fragment fragment, int second) {
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
 
@@ -81,7 +81,7 @@ public class FileIntentUtil extends AppCompatActivity {
 
         Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-        intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 30);
+        intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, second);
         fragment.startActivityForResult(intent, ChooseTypeEnum.TAKE_VIDEO.id);
 
         lastActionType = ChooseTypeEnum.TAKE_VIDEO;

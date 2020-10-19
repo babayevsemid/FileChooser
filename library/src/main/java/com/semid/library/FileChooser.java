@@ -85,6 +85,11 @@ public class FileChooser implements LifecycleObserver {
         fragment.show(activity.getSupportFragmentManager(), null);
     }
 
+    public void intent(ChooseTypeEnum chooseType,int takeVideoLimitSecond) {
+        BlankFragment fragment = BlankFragment.newInstance(chooseType,takeVideoLimitSecond);
+        fragment.show(activity.getSupportFragmentManager(), null);
+    }
+
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     private void checkNewFile() {
         new AsyncTask<Void, Void, ArrayList<FileModel>>() {
