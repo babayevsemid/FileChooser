@@ -45,14 +45,13 @@ class MyDialogFragment : DialogFragment(), View.OnClickListener {
         binding.takeVideoDuration.setOnClickListener(this)
     }
 
-
     override fun onClick(view: View?) {
         when (view) {
             binding.choosePhotoTxt -> fileChooser.requestFile(FileTypeEnum.CHOOSE_PHOTO)
             binding.chooseVideoTxt -> fileChooser.requestFile(FileTypeEnum.CHOOSE_VIDEO)
             binding.takePhotoTxt -> fileChooser.requestFile(FileTypeEnum.TAKE_PHOTO)
             binding.takeVideoTxt -> fileChooser.requestFile(FileTypeEnum.TAKE_VIDEO)
-            binding.takeVideoDuration -> fileChooser.requestFile(FileTypeEnum.TAKE_VIDEO, 30000)
+            binding.takeVideoDuration -> fileChooser.requestFile(FileTypeEnum.TAKE_VIDEO, 15)
         }
     }
 }

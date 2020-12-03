@@ -23,6 +23,14 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
     val permissionLiveData: LiveData<Boolean>
         get() = _permissionLiveData
 
+    private val _manualPermissionLiveData = MutableLiveData<Boolean>()
+    val manualPermissionLiveData: LiveData<Boolean>
+        get() = _manualPermissionLiveData
+
+    private val _manualMultiPermissionLiveData = MutableLiveData<Boolean>()
+    val manualMultiPermissionLiveData: LiveData<Boolean>
+        get() = _manualMultiPermissionLiveData
+
     private var fileTypeEnum = FileTypeEnum.CHOOSE_PHOTO
     private var permissionLauncher: ActivityResultLauncher<String>? = null
 
@@ -50,7 +58,7 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
         initManualMultiPermission()
     }
 
-    fun requestFile(fileTypeEnum: FileTypeEnum, maxDuration: Int = 0) {
+    fun requestFile(fileTypeEnum: FileTypeEnum, maxDurationSecond: Int = 0) {
         when (fileTypeEnum) {
             FileTypeEnum.CHOOSE_PHOTO, FileTypeEnum.CHOOSE_VIDEO -> {
                 FileChooserActivity@ this.fileTypeEnum = fileTypeEnum
@@ -58,10 +66,10 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
             }
             FileTypeEnum.TAKE_PHOTO -> takePhoto()
             FileTypeEnum.TAKE_VIDEO -> {
-                if (maxDuration == 0)
+                if (maxDurationSecond == 0)
                     takeVideo()
                 else
-                    takeVideoWithLimit(maxDuration)
+                    takeVideoWithLimit(maxDurationSecond)
             }
         }
     }
@@ -180,7 +188,7 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
         takeVideoLauncher?.launch(takeVideoUri)
     }
 
-    private fun takeVideoWithLimit(maxDuration: Int) {
+    private fun takeVideoWithLimit(maxDurationSecond: Int) {
         val builder = StrictMode.VmPolicy.Builder()
         StrictMode.setVmPolicy(builder.build())
 
@@ -188,14 +196,14 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
 
         val intent = Intent(MediaStore.ACTION_VIDEO_CAPTURE)
         intent.putExtra(MediaStore.EXTRA_OUTPUT, takePhotoUri)
-        intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, maxDuration)
+        intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, maxDurationSecond)
         takeVideoDurationLauncher?.launch(intent)
     }
 
     private fun initManualPermission() {
         manualPermissionLauncher =
             activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-                _permissionLiveData.postValue(isGranted)
+                _manualPermissionLiveData.postValue(isGranted)
             }
     }
 
@@ -204,12 +212,12 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
             activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
                 permissions.entries.forEach {
                     if (!it.value) {
-                        _permissionLiveData.postValue(false)
+                        _manualMultiPermissionLiveData.postValue(false)
                         return@forEach
                     }
                 }
 
-                _permissionLiveData.postValue(true)
+                _manualMultiPermissionLiveData.postValue(true)
             }
     }
 

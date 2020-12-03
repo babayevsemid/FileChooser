@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             binding.chooseVideoTxt -> fileChooser.requestFile(FileTypeEnum.CHOOSE_VIDEO)
             binding.takePhotoTxt -> fileChooser.requestFile(FileTypeEnum.TAKE_PHOTO)
             binding.takeVideoTxt -> fileChooser.requestFile(FileTypeEnum.TAKE_VIDEO)
-            binding.takeVideoDuration -> fileChooser.requestFile(FileTypeEnum.TAKE_VIDEO, 30000)
+            binding.takeVideoDuration -> fileChooser.requestFile(FileTypeEnum.TAKE_VIDEO, 15)
             binding.showFragment -> showFragment()
         }
     }

@@ -52,7 +52,7 @@ class FileChooserFragment(private var fragment: Fragment) {
         initManualMultiPermission()
     }
 
-    fun requestFile(fileTypeEnum: FileTypeEnum, maxDuration: Int = 0) {
+    fun requestFile(fileTypeEnum: FileTypeEnum, maxDurationSecond: Int = 0) {
         when (fileTypeEnum) {
             FileTypeEnum.CHOOSE_PHOTO, FileTypeEnum.CHOOSE_VIDEO -> {
                 FileChooserFragment@ this.fileTypeEnum = fileTypeEnum
@@ -60,10 +60,10 @@ class FileChooserFragment(private var fragment: Fragment) {
             }
             FileTypeEnum.TAKE_PHOTO -> takePhoto()
             FileTypeEnum.TAKE_VIDEO -> {
-                if (maxDuration == 0)
+                if (maxDurationSecond == 0)
                     takeVideo()
                 else
-                    takeVideoWithLimit(maxDuration)
+                    takeVideoWithLimit(maxDurationSecond)
             }
         }
     }
@@ -181,7 +181,7 @@ class FileChooserFragment(private var fragment: Fragment) {
         takeVideoLauncher?.launch(takeVideoUri)
     }
 
-    private fun takeVideoWithLimit(maxDuration: Int) {
+    private fun takeVideoWithLimit(maxDurationSecond: Int) {
         val builder = StrictMode.VmPolicy.Builder()
         StrictMode.setVmPolicy(builder.build())
 
@@ -189,7 +189,7 @@ class FileChooserFragment(private var fragment: Fragment) {
 
         val intent = Intent(MediaStore.ACTION_VIDEO_CAPTURE)
         intent.putExtra(MediaStore.EXTRA_OUTPUT, takePhotoUri)
-        intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, maxDuration)
+        intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, maxDurationSecond)
         takeVideoDurationLauncher?.launch(intent)
     }
 
