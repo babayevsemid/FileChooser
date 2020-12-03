@@ -2,6 +2,7 @@ package com.semid.filechooser
 
 import android.Manifest
 import android.app.Activity.RESULT_OK
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.StrictMode
@@ -11,6 +12,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.io.File
 
 class FileChooserFragment(private var fragment: Fragment) {
     private val _fileLiveData = MutableLiveData<FileModel>()
@@ -216,5 +220,30 @@ class FileChooserFragment(private var fragment: Fragment) {
 
     fun multiRequestPermission(array: Array<String>) {
         manualMultiPermissionLauncher?.launch(array)
+    }
+
+    companion object {
+        fun deleteTakeFiles(context: Context) {
+            GlobalScope.launch {
+                getBaseFolder(context).listFiles()?.forEach {
+                    it.delete()
+                }
+            }
+        }
+
+        fun deleteTakeFile(fileModel: FileModel) {
+            if (fileModel.type == FileTypeEnum.TAKE_VIDEO ||
+                fileModel.type == FileTypeEnum.TAKE_PHOTO) {
+
+                deleteFile(fileModel.path)
+            }
+        }
+
+        fun deleteFile(path: String?) {
+            GlobalScope.launch {
+                File(path).delete()
+            }
+        }
+
     }
 }

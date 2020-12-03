@@ -54,14 +54,14 @@ fun getNewFileUri(context: Context?, fileTypeEnum: FileTypeEnum): Uri? {
     return Uri.fromFile(file)
 }
 
-private fun getBaseFolder(context: Context?): File {
+fun getBaseFolder(context: Context?): File {
     val folder = File(context?.externalCacheDir, getApplicationName(context))
     folder.mkdirs()
     return folder
 }
 
 private fun getApplicationName(context: Context?): String {
-    if (context==null)
+    if (context == null)
         return ""
 
     val applicationInfo = context.applicationInfo
