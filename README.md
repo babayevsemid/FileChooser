@@ -22,7 +22,7 @@ dependencies {
 ### Use in activity
 
 ```
- val fileChooser = FileChooserActivity(this)
+val fileChooser = FileChooserActivity(this) 
  fileChooser.fileLiveData
             .observe(this, Observer {
                //Selected your photo
@@ -33,12 +33,20 @@ dependencies {
 
 ``` 
 
-### Use in fragment
+### Use in fragment with check permission
 
 ```
- val fileChooser = FileChooserFragment(this)
+val fileChooser = FileChooserFragment(this)
+fileChooser.permissionLiveData
+            .observe(viewLifecycleOwner, Observer {
+                if (it) {
+                    //Granted
+                } else {
+                    //Deny
+                }
+            })
  fileChooser.fileLiveData
-            .observe(this, Observer {
+            .observe(viewLifecycleOwner, Observer {
                //Created your photo
                //it.path
                //it.type
@@ -46,8 +54,9 @@ dependencies {
  fileChooser.requestFile(FileTypeEnum.TAKE_PHOTO)
 
 ``` 
+ 
 
-### Delete take files on app create
+### Delete the created files when the application is created
 ```
 class App : Application() {
     override fun onCreate() {
