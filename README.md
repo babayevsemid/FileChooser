@@ -85,4 +85,31 @@ class App : Application() {
     fileChooser.requestFile(FileTypeEnum.TAKE_VIDEO, 10000)
         
 ```
+
+### You can check also other permissions
+
+``` 
+    fileChooser.manualPermissionLiveData
+            .observe(this, Observer {
+                println("Permission isGranted $it")
+            })
+    fileChooser.requestPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+        
+```
+
+
+``` 
+    fileChooser.manualMultiPermissionLiveData
+            .observe(this, Observer {
+                println("Permission isGranted $it")
+            })
+            
+    fileChooser.multiRequestPermission(
+            arrayOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+        )
+        
+```
  
