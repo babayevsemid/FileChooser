@@ -12,57 +12,68 @@ repositories {
 }
 
 dependencies {
-     implementation 'com.github.babayevsemid:FileChooser:0.0.2'
+    implementation 'com.github.babayevsemid:FileChooser:1.0.1'
+     
+     //required
+    implementation "androidx.activity:activity:1.2.0-beta02"
+    implementation "androidx.fragment:fragment:1.3.0-beta01"
 }
 ```
-  
-```
-public class App extends Application {
-    @Override
-    public void onCreate() {
-        super.onCreate();
+### Use in activity
 
-        FileChooser.setup(this);
+```
+ val fileChooser = FileChooserActivity(this)
+ fileChooser.fileLiveData
+            .observe(this, Observer {
+               //Selected your photo
+               //it.path
+               //it.type
+            })
+ fileChooser.requestFile(FileTypeEnum.CHOOSE_PHOTO)
+
+``` 
+
+### Use in fragment
+
+```
+ val fileChooser = FileChooserFragment(this)
+ fileChooser.fileLiveData
+            .observe(this, Observer {
+               //Created your photo
+               //it.path
+               //it.type
+            })
+ fileChooser.requestFile(FileTypeEnum.TAKE_PHOTO)
+
+``` 
+
+### Delete take files on app create
+```
+class App : Application() {
+    override fun onCreate() {
+        super.onCreate()
+
+        FileChooserFragment.deleteTakeFiles(this)
     }
 }
 ```
 
-### Use 
+### FileTypeEnum
 
+``` 
+  enum class FileTypeEnum {
+        CHOOSE_VIDEO,
+        CHOOSE_PHOTO,
+        TAKE_VIDEO,
+        TAKE_PHOTO
+  }
+        
 ```
- FileListener listener = new FileListener() {
-            @Override
-            public void newFile(ArrayList<FileModel> files, FileModel fileModel) {
-                
-            }
 
-            @Override
-            public void onChanged(ArrayList<FileModel> files) {
-                 
-            }
-
-            @Override
-            public void deletedFile(boolean isVideo, FileModel fileModel, int position) {
-            
-            }
-
-            @Override
-            public void deletedAllFiles() {
-            
-            }
-        };
-
-        FileChooser chooser = FileChooser.getInstance();
-        chooser.addListener(listener);
-        chooser.intent(ChooseTypeEnum.CHOOSE_PHOTO);
+### Video set max second
 
 ``` 
-
-### Take video max second //100
-
-``` 
-                 FileChooser.getInstance()
-                        .intent(ChooseTypeEnum.TAKE_VIDEO, 100);
+    fileChooser.requestFile(FileTypeEnum.TAKE_VIDEO, 10000)
         
 ```
  
