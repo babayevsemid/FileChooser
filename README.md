@@ -12,11 +12,11 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.babayevsemid:FileChooser:1.0.2'
+    implementation 'com.github.babayevsemid:FileChooser:1.0.4'
      
      //required
-    implementation "androidx.activity:activity:1.2.0-beta02"
-    implementation "androidx.fragment:fragment:1.3.0-beta01"
+    implementation "androidx.activity:activity:1.2.0-rc01"
+    implementation "androidx.fragment:fragment:1.3.0-beta02"
 }
 ```
 ### Use in activity
