@@ -17,11 +17,11 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 class FileChooserFragment(private var fragment: Fragment) {
-    private val _fileLiveData = MutableLiveData<FileModel>()
+    private val _fileLiveData = SingleLiveEvent<FileModel>()
     val fileLiveData: LiveData<FileModel>
         get() = _fileLiveData
 
-    private val _permissionLiveData = MutableLiveData<Boolean>()
+    private val _permissionLiveData = SingleLiveEvent<Boolean>()
     val permissionLiveData: LiveData<Boolean>
         get() = _permissionLiveData
 

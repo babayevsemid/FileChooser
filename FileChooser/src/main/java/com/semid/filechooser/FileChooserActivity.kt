@@ -16,19 +16,19 @@ import java.io.File
 
 
 class FileChooserActivity(private var activity: AppCompatActivity) {
-    private val _fileLiveData = MutableLiveData<FileModel>()
+    private val _fileLiveData = SingleLiveEvent<FileModel>()
     val fileLiveData: LiveData<FileModel>
         get() = _fileLiveData
 
-    private val _permissionLiveData = MutableLiveData<Boolean>()
+    private val _permissionLiveData = SingleLiveEvent<Boolean>()
     val permissionLiveData: LiveData<Boolean>
         get() = _permissionLiveData
 
-    private val _manualPermissionLiveData = MutableLiveData<Boolean>()
+    private val _manualPermissionLiveData = SingleLiveEvent<Boolean>()
     val manualPermissionLiveData: LiveData<Boolean>
         get() = _manualPermissionLiveData
 
-    private val _manualMultiPermissionLiveData = MutableLiveData<Boolean>()
+    private val _manualMultiPermissionLiveData = SingleLiveEvent<Boolean>()
     val manualMultiPermissionLiveData: LiveData<Boolean>
         get() = _manualMultiPermissionLiveData
 
