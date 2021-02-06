@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.StrictMode
 import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
@@ -152,7 +153,6 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
         takeVideoDurationLauncher =
             activity.registerForActivityResult(StartActivityForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) {
-
                     val fileModel = FileModel(
                         FileTypeEnum.TAKE_VIDEO,
                         takeVideoUri?.path
@@ -200,7 +200,7 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
         takeVideoUri = getNewFileUri(activity, FileTypeEnum.TAKE_VIDEO)
 
         val intent = Intent(MediaStore.ACTION_VIDEO_CAPTURE)
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, takePhotoUri)
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, takeVideoUri)
         intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, maxDurationSecond)
         takeVideoDurationLauncher?.launch(intent)
     }

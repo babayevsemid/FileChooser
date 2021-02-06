@@ -9,6 +9,7 @@ import com.bumptech.glide.Glide
 import com.semid.filechooser.FileChooserActivity
 import com.semid.filechooser.FileTypeEnum
 import com.semid.filechoosersimple.databinding.ActivityMainBinding
+import java.io.File
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
     private val fileChooser = FileChooserActivity(this)
@@ -24,6 +25,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         fileChooser.fileLiveData
             .observe(this, Observer {
                 Log.e("file", it.path + "///")
+                Log.e("file", File(it.path).length().toString())
 
                 Glide.with(applicationContext)
                     .load(it.path)
