@@ -15,8 +15,8 @@ dependencies {
     implementation 'com.github.babayevsemid:FileChooser:1.0.5'
      
      //required
-    implementation "androidx.activity:activity:1.2.0-rc01"
-    implementation "androidx.fragment:fragment:1.3.0-beta02"
+    implementation "androidx.activity:activity-ktx:1.2.0-rc01"
+    implementation "androidx.fragment:fragment-ktx:1.3.0-rc02"
 }
 ```
 ### Use in activity
