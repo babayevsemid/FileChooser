@@ -15,8 +15,8 @@ dependencies {
     implementation 'com.github.babayevsemid:FileChooser:1.0.5'
      
      //required
-    implementation "androidx.activity:activity-ktx:1.2.0-rc01"
-    implementation "androidx.fragment:fragment-ktx:1.3.0-rc02"
+    implementation "androidx.activity:activity-ktx:1.3.0-alpha05"
+    implementation "androidx.fragment:fragment-ktx:1.3.2"
 }
 ```
 ### Use in activity
@@ -54,7 +54,22 @@ fileChooser.permissionLiveData
  fileChooser.requestFile(FileTypeEnum.TAKE_PHOTO)
 
 ``` 
- 
+### Use in java
+
+```
+ FileChooserActivity fileChooser = new FileChooserActivity(this);
+ fileChooser.getFileLiveData()
+        .observe(this, fileModel -> {
+            Log.e("filePath", fileModel.getPath());
+
+            File file = new File(fileModel.getPath());
+
+            //Use file
+        });
+
+ //CHOOSE_PHOTO
+ fileChooser.requestFile(FileTypeEnum.CHOOSE_PHOTO, 0);
+``` 
 
 ### Delete the created files when the application is created
 ```
