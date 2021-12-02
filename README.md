@@ -12,18 +12,18 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.babayevsemid:FileChooser:1.1.0'
+    implementation 'com.github.babayevsemid:FileChooser:1.2.0'
      
      //required 
     implementation "androidx.activity:activity-ktx:1.4.0"
-    implementation "androidx.fragment:fragment-ktx:1.3.6"
+    implementation "androidx.fragment:fragment-ktx:1.4.0"
 }
 ```
 ### Use in activity
 
 ```
 val fileChooser = FileChooserActivity(this) 
- fileChooser.fileLiveData
+ fileChooser.fileSharedFlow
             .observe(this, Observer {
                //Selected your photo
                //it.path
@@ -37,16 +37,18 @@ val fileChooser = FileChooserActivity(this)
 
 ```
 val fileChooser = FileChooserFragment(this)
-fileChooser.permissionLiveData
-            .observe(viewLifecycleOwner, Observer {
+fileChooser.permissionSharedFlow
+            .asLiveData()
+            .observe(viewLifecycleOwner){
                 if (it) {
                     //Granted
                 } else {
                     //Deny
                 }
             })
- fileChooser.fileLiveData
-            .observe(viewLifecycleOwner, Observer {
+ fileChooser.fileSharedFlow
+            .asLiveData()
+            .observe(viewLifecycleOwner){
                //Created your photo
                //it.path
                //it.type
@@ -58,8 +60,9 @@ fileChooser.permissionLiveData
 
 ```
  FileChooserActivity fileChooser = new FileChooserActivity(this);
- fileChooser.getFileLiveData()
-        .observe(this, fileModel -> {
+ fileChooser.fileSharedFlow
+        .asLiveData()
+        .observe(viewLifecycleOwner){fileModel->
             Log.e("filePath", fileModel.getPath());
 
             File file = new File(fileModel.getPath());
@@ -87,19 +90,12 @@ class App : Application() {
 ``` 
   enum class FileTypeEnum {
         CHOOSE_VIDEO,
-        CHOOSE_PHOTO,
-        TAKE_VIDEO,
+        CHOOSE_PHOTO, 
         TAKE_PHOTO
   }
         
 ```
-
-### Video set max second (15 second)
-
-``` 
-    fileChooser.requestFile(FileTypeEnum.TAKE_VIDEO, 15)
-        
-```
+ 
 
 ### You can check also other permissions
 
@@ -114,8 +110,9 @@ class App : Application() {
 
 
 ``` 
-    fileChooser.manualMultiPermissionLiveData
-            .observe(this, Observer {
+    fileChooser.permissionMultiSharedFlow
+            .asLiveData()
+            .observe(viewLifecycleOwner){
                 println("Permission isGranted $it")
             })
             
@@ -126,11 +123,5 @@ class App : Application() {
             )
         )
         
-```
-
-![alt text](screenshots/screenshot1.jpeg)
-
-![alt text](screenshots/screenshot2.jpeg)
-
-![alt text](screenshots/screenshot3.jpeg)
+``` 
  
