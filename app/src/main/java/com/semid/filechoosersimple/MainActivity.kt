@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
+import androidx.lifecycle.asLiveData
 import com.bumptech.glide.Glide
 import com.semid.filechooser.FileChooserActivity
 import com.semid.filechooser.FileTypeEnum
@@ -14,7 +14,7 @@ import java.io.File
 class MainActivity : AppCompatActivity(), View.OnClickListener {
     private val fileChooser = FileChooserActivity(this)
 
-    private val binding: ActivityMainBinding by lazy {
+    private val binding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
 
@@ -22,15 +22,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        fileChooser.fileLiveData
-            .observe(this, Observer {
+        fileChooser.fileSharedFlow
+            .asLiveData()
+            .observe(this) {
                 Log.e("file", it.path + "///")
                 Log.e("file", File(it.path).length().toString())
 
                 Glide.with(applicationContext)
                     .load(it.path)
                     .into(binding.coverImg)
-            })
+            }
     }
 
     override fun onClick(view: View?) {
@@ -38,8 +39,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             binding.choosePhotoTxt -> fileChooser.requestFile(FileTypeEnum.CHOOSE_PHOTO)
             binding.chooseVideoTxt -> fileChooser.requestFile(FileTypeEnum.CHOOSE_VIDEO)
             binding.takePhotoTxt -> fileChooser.requestFile(FileTypeEnum.TAKE_PHOTO)
-            binding.takeVideoTxt -> fileChooser.requestFile(FileTypeEnum.TAKE_VIDEO)
-            binding.takeVideoDuration -> fileChooser.requestFile(FileTypeEnum.TAKE_VIDEO, 15)
             binding.showFragment -> showFragment()
         }
     }

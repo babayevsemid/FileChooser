@@ -2,72 +2,70 @@ package com.semid.filechooser
 
 import android.content.Context
 import android.database.Cursor
+import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
-
-fun hasFile(path: String?): Boolean {
-    return File(path).exists()
-}
-
-fun getPath(context: Context?, uri: Uri?): String? {
-    print(uri)
-    if (uri == null)
-        return null
-
-    val projection = arrayOf(MediaStore.Video.Media.DATA)
-    val cursor: Cursor? = context?.contentResolver?.query(uri, projection, null, null, null)
-    return if (cursor != null) {
-        val columnIndex: Int = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)
-        cursor.moveToFirst()
-        cursor.getString(columnIndex)
-    } else null
-}
-
-fun getSelectedImagePath(context: Context, uri: Uri?): String? {
-    var cursor: Cursor? = context.contentResolver.query(uri!!, null, null, null, null)
-    cursor?.moveToFirst()
-
-    var documentId = cursor?.getString(0)
-    documentId = documentId?.substring(documentId.lastIndexOf(":") + 1)
-    cursor?.close()
-    cursor = context.contentResolver.query(
-        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-        null, MediaStore.Images.Media._ID + " = ? ", arrayOf(documentId), null
-    )
-    cursor?.moveToFirst()
-    val path = cursor?.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA))
-    cursor?.close()
-    return path
-}
-
-fun getNewFileUri(context: Context?, fileTypeEnum: FileTypeEnum): Uri? {
-    var endWith = "jpg"
-
-    when (fileTypeEnum) {
-        FileTypeEnum.CHOOSE_VIDEO, FileTypeEnum.TAKE_VIDEO -> endWith = "mp4"
+object Utils {
+    fun hasFile(path: String?): Boolean {
+        return path?.let {
+            File(it).exists()
+        } ?: false
     }
 
-    val timeStamp =
-        SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    fun getPath(context: Context?, uri: Uri?): String? {
+        print(uri)
+        if (uri == null)
+            return null
 
-    val file = File(getBaseFolder(context).toString() + "/" + timeStamp + "." + endWith)
-    return Uri.fromFile(file)
-}
+        val projection = arrayOf(MediaStore.Video.Media.DATA)
+        val cursor: Cursor? = context?.contentResolver?.query(uri, projection, null, null, null)
+        return if (cursor != null) {
+            val columnIndex: Int = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA)
+            cursor.moveToFirst()
 
-fun getBaseFolder(context: Context?): File {
-    val folder = File(context?.externalCacheDir, getApplicationName(context))
-    folder.mkdirs()
-    return folder
-}
+            val path = cursor.getString(columnIndex)
+            cursor.close()
 
-private fun getApplicationName(context: Context?): String {
-    if (context == null)
-        return ""
+            path
+        } else null
+    }
 
-    val applicationInfo = context.applicationInfo
-    return applicationInfo.packageName
+    fun getNewFileUri(context: Context?, fileTypeEnum: FileTypeEnum): Uri? {
+        val endWith = "jpg"
+
+        val timeStamp =
+            SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+
+        val file = File(getBaseFolder(context).toString() + "/" + timeStamp + "." + endWith)
+        return Uri.fromFile(file)
+    }
+
+    fun getBaseFolder(context: Context?): File {
+        val folder = File(context?.externalCacheDir, getApplicationName(context))
+        folder.mkdirs()
+        return folder
+    }
+
+    private fun getApplicationName(context: Context?): String {
+        if (context == null)
+            return ""
+
+        val applicationInfo = context.applicationInfo
+        return applicationInfo.packageName
+    }
+
+    fun saveBitmap(context: Context?, bitmap: Bitmap): File {
+        val newFile = File(getNewFileUri(context, FileTypeEnum.CHOOSE_PHOTO)?.path.toString())
+        val stream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+        stream.writeTo(FileOutputStream(newFile))
+        stream.close()
+        return newFile
+    }
 }
