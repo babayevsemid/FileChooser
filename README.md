@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.babayevsemid:FileChooser:1.2.0'
+    implementation 'com.github.babayevsemid:FileChooser:1.3.0'
      
      //required 
     implementation "androidx.activity:activity-ktx:1.4.0"
