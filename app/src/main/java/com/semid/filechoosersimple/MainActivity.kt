@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.asLiveData
 import com.bumptech.glide.Glide
 import com.semid.filechooser.FileChooserActivity
 import com.semid.filechooser.FileTypeEnum
@@ -22,8 +21,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        fileChooser.fileSharedFlow
-            .asLiveData()
+        fileChooser.fileLiveData
             .observe(this) {
                 Log.e("file", it.path + "///")
                 Log.e("file", File(it.path).length().toString())

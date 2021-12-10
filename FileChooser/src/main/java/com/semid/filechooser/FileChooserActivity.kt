@@ -11,21 +11,18 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.launch
+import androidx.lifecycle.LiveData
 
 
 class FileChooserActivity(private var activity: AppCompatActivity) {
-    private val _fileSharedFlow = MutableSharedFlow<FileModel>()
-    val fileSharedFlow = _fileSharedFlow.asSharedFlow()
+    private val _fileLiveData = SingleLiveEvent<FileModel>()
+    val fileLiveData: LiveData<FileModel> get() = _fileLiveData
 
-    private val _permissionSharedFlow = MutableSharedFlow<Boolean>()
-    val permissionSharedFlow = _permissionSharedFlow.asSharedFlow()
+    private val _permissionLiveData = SingleLiveEvent<Boolean>()
+    val permissionLiveData: LiveData<Boolean> get() = _permissionLiveData
 
-    private val _permissionMultiSharedFlow = MutableSharedFlow<Boolean>()
-    val permissionMultiSharedFlow = _permissionMultiSharedFlow.asSharedFlow()
+    private val _permissionMultiLiveData = SingleLiveEvent<Boolean>()
+    val permissionMultiLiveData: LiveData<Boolean> get() = _permissionMultiLiveData
 
     private var fileTypeEnum = FileTypeEnum.CHOOSE_PHOTO
     private var permissionLauncher: ActivityResultLauncher<String>? = null
@@ -62,9 +59,8 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
     private fun initReadPermissionAndNext() {
         permissionLauncher =
             activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-                activity.lifecycleScope.launch {
-                    _permissionSharedFlow.emit(isGranted)
-                }
+                _permissionLiveData.value = isGranted
+
 
                 if (isGranted) {
                     when (fileTypeEnum) {
@@ -88,9 +84,7 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
                         Utils.getPath(activity.applicationContext, result.data?.data)
                     )
 
-                    activity.lifecycleScope.launch {
-                        _fileSharedFlow.emit(fileModel)
-                    }
+                    _fileLiveData.value = fileModel
                 }
             }
     }
@@ -105,9 +99,7 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
                         Utils.getPath(activity.applicationContext, result.data?.data)
                     )
 
-                    activity.lifecycleScope.launch {
-                        _fileSharedFlow.emit(fileModel)
-                    }
+                    _fileLiveData.value = fileModel
                 }
             }
     }
@@ -120,16 +112,17 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
                         val bitmap = result.data?.extras?.get("data") as Bitmap?
 
                         bitmap?.let {
-                            val file = Utils.saveBitmap(context = activity.applicationContext, bitmap = bitmap)
+                            val file = Utils.saveBitmap(
+                                context = activity.applicationContext,
+                                bitmap = bitmap
+                            )
 
                             val fileModel = FileModel(
                                 FileTypeEnum.TAKE_PHOTO,
                                 file.path
                             )
 
-                            activity.lifecycleScope.launchWhenStarted {
-                                _fileSharedFlow.emit(fileModel)
-                            }
+                            _fileLiveData.value = fileModel
                         }
                     }
                 }
@@ -158,25 +151,21 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
     private fun initManualPermission() {
         manualPermissionLauncher =
             activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-                activity.lifecycleScope.launch {
-                    _permissionSharedFlow.emit(isGranted)
-                }
+                _permissionLiveData.value = isGranted
             }
     }
 
     private fun initManualMultiPermission() {
         manualMultiPermissionLauncher =
             activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-                var isGranted=true
+                var isGranted = true
 
                 permissions.entries.forEach {
                     if (!it.value)
-                        isGranted=false
+                        isGranted = false
                 }
 
-                activity.lifecycleScope.launch {
-                    _permissionMultiSharedFlow.emit(isGranted)
-                }
+                _permissionMultiLiveData.value = isGranted
             }
     }
 

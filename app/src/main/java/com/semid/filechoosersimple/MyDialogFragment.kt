@@ -1,11 +1,11 @@
 package com.semid.filechoosersimple
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.asLiveData
 import com.bumptech.glide.Glide
 import com.semid.filechooser.FileChooserFragment
 import com.semid.filechooser.FileTypeEnum
@@ -29,10 +29,9 @@ class MyDialogFragment : DialogFragment(), View.OnClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        fileChooser.fileSharedFlow
-            .asLiveData()
-            .observe(viewLifecycleOwner){
-                println(it.path)
+        fileChooser.fileLiveData
+            .observe(viewLifecycleOwner) {
+                Log.e("saa,", it.path.toString())
 
                 Glide.with(requireContext())
                     .load(it.path)

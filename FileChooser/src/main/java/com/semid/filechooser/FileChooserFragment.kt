@@ -10,21 +10,19 @@ import android.provider.MediaStore
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.LiveData
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import java.io.File
 
 class FileChooserFragment(private var fragment: Fragment) {
-    private val _fileSharedFlow = MutableSharedFlow<FileModel>()
-    val fileSharedFlow = _fileSharedFlow.asSharedFlow()
+    private val _fileLiveData = SingleLiveEvent<FileModel>()
+    val fileLiveData: LiveData<FileModel> get() = _fileLiveData
 
-    private val _permissionSharedFlow = MutableSharedFlow<Boolean>()
-    val permissionSharedFlow = _permissionSharedFlow.asSharedFlow()
+    private val _permissionLiveData = SingleLiveEvent<Boolean>()
+    val permissionLiveData: LiveData<Boolean> get() = _permissionLiveData
 
-    private val _permissionMultiSharedFlow = MutableSharedFlow<Boolean>()
-    val permissionMultiSharedFlow = _permissionMultiSharedFlow.asSharedFlow()
+    private val _permissionMultiLiveData = SingleLiveEvent<Boolean>()
+    val permissionMultiLiveData: LiveData<Boolean> get() = _permissionMultiLiveData
 
     private var fileTypeEnum = FileTypeEnum.CHOOSE_PHOTO
     private var permissionLauncher: ActivityResultLauncher<String>? = null
@@ -61,9 +59,8 @@ class FileChooserFragment(private var fragment: Fragment) {
     private fun initReadPermissionAndNext() {
         permissionLauncher =
             fragment.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-                fragment.lifecycleScope.launchWhenStarted {
-                    _permissionSharedFlow.emit(isGranted)
-                }
+                _permissionLiveData.value = isGranted
+
 
                 if (isGranted) {
                     when (fileTypeEnum) {
@@ -87,9 +84,7 @@ class FileChooserFragment(private var fragment: Fragment) {
                         Utils.getPath(fragment.context, result.data?.data)
                     )
 
-                    fragment.lifecycleScope.launchWhenStarted {
-                        _fileSharedFlow.emit(fileModel)
-                    }
+                    _fileLiveData.value = fileModel
                 }
             }
     }
@@ -104,9 +99,7 @@ class FileChooserFragment(private var fragment: Fragment) {
                         Utils.getPath(fragment.context, result.data?.data)
                     )
 
-                    fragment.lifecycleScope.launchWhenStarted {
-                        _fileSharedFlow.emit(fileModel)
-                    }
+                    _fileLiveData.value = fileModel
                 }
             }
     }
@@ -126,9 +119,7 @@ class FileChooserFragment(private var fragment: Fragment) {
                             file.path
                         )
 
-                        fragment.lifecycleScope.launchWhenStarted {
-                            _fileSharedFlow.emit(fileModel)
-                        }
+                        _fileLiveData.value = fileModel
                     }
                 }
             }
@@ -157,9 +148,7 @@ class FileChooserFragment(private var fragment: Fragment) {
     private fun initManualPermission() {
         manualPermissionLauncher =
             fragment.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-                fragment.lifecycleScope.launchWhenStarted {
-                    _permissionSharedFlow.emit(isGranted)
-                }
+                _permissionLiveData.value = isGranted
             }
     }
 
@@ -173,9 +162,8 @@ class FileChooserFragment(private var fragment: Fragment) {
                         isGranted = false
                 }
 
-                fragment.lifecycleScope.launchWhenStarted {
-                    _permissionMultiSharedFlow.emit(isGranted)
-                }
+                _permissionMultiLiveData.value = isGranted
+
             }
     }
 
