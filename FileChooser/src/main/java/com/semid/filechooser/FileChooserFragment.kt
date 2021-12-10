@@ -150,6 +150,10 @@ class FileChooserFragment(private var fragment: Fragment) {
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values
             )
 
+            takePhotoUri = it.contentResolver.insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values
+            )
+
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             intent.putExtra(MediaStore.EXTRA_OUTPUT, takePhotoUri)
 

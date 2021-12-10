@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.babayevsemid:FileChooser:1.3.1'
+    implementation 'com.github.babayevsemid:FileChooser:1.4.0'
      
      //required 
     implementation "androidx.activity:activity-ktx:1.4.0"
@@ -23,7 +23,7 @@ dependencies {
 
 ```
 val fileChooser = FileChooserActivity(this) 
- fileChooser.fileSharedFlow
+ fileChooser.fileLiveData
             .observe(this, Observer {
                //Selected your photo
                //it.path
@@ -37,8 +37,7 @@ val fileChooser = FileChooserActivity(this)
 
 ```
 val fileChooser = FileChooserFragment(this)
-fileChooser.permissionSharedFlow
-            .asLiveData()
+fileChooser.permissionLiveData
             .observe(viewLifecycleOwner){
                 if (it) {
                     //Granted
@@ -46,8 +45,7 @@ fileChooser.permissionSharedFlow
                     //Deny
                 }
             })
- fileChooser.fileSharedFlow
-            .asLiveData()
+ fileChooser.fileLiveData
             .observe(viewLifecycleOwner){
                //Created your photo
                //it.path
@@ -60,8 +58,7 @@ fileChooser.permissionSharedFlow
 
 ```
  FileChooserActivity fileChooser = new FileChooserActivity(this);
- fileChooser.fileSharedFlow
-        .asLiveData()
+ fileChooser.fileLiveData
         .observe(viewLifecycleOwner){fileModel->
             Log.e("filePath", fileModel.getPath());
 
