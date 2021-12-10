@@ -39,12 +39,14 @@ object Utils {
     fun getNewFileUri(context: Context?, fileTypeEnum: FileTypeEnum): Uri? {
         val endWith = "jpg"
 
-        val timeStamp =
-            SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Calendar.getInstance().time)
+        val timeStamp = generateFileName()
 
         val file = File(getBaseFolder(context).toString() + "/" + timeStamp + "." + endWith)
         return Uri.fromFile(file)
     }
+
+    fun generateFileName() =
+        SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Calendar.getInstance().time)
 
     fun getBaseFolder(context: Context?): File {
         val folder = File(context?.externalCacheDir, getApplicationName(context))

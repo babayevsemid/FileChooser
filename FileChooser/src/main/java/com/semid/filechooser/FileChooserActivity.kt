@@ -2,8 +2,8 @@ package com.semid.filechooser
 
 import android.Manifest
 import android.app.Activity
+import android.content.ContentValues
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.StrictMode
 import android.provider.MediaStore
@@ -34,7 +34,7 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
     private var chooseVideoLauncher: ActivityResultLauncher<Intent>? = null
     private var takePhotoLauncher: ActivityResultLauncher<Intent>? = null
 
-    private var takeVideoUri: Uri? = null
+    private var takePhotoUri: Uri? = null
 
     init {
         initChoosePhoto()
@@ -109,21 +109,12 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
             activity.registerForActivityResult(StartActivityForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) {
                     if (result.resultCode == Activity.RESULT_OK) {
-                        val bitmap = result.data?.extras?.get("data") as Bitmap?
+                        val fileModel = FileModel(
+                            FileTypeEnum.TAKE_PHOTO,
+                            Utils.getPath(activity, takePhotoUri)
+                        )
 
-                        bitmap?.let {
-                            val file = Utils.saveBitmap(
-                                context = activity.applicationContext,
-                                bitmap = bitmap
-                            )
-
-                            val fileModel = FileModel(
-                                FileTypeEnum.TAKE_PHOTO,
-                                file.path
-                            )
-
-                            _fileLiveData.value = fileModel
-                        }
+                        _fileLiveData.value = fileModel
                     }
                 }
             }
@@ -145,7 +136,18 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
         val builder = StrictMode.VmPolicy.Builder()
         StrictMode.setVmPolicy(builder.build())
 
-        takePhotoLauncher?.launch(Intent(MediaStore.ACTION_IMAGE_CAPTURE))
+        val values = ContentValues()
+        values.put(MediaStore.Images.Media.TITLE, Utils.generateFileName())
+        values.put(MediaStore.Images.Media.DESCRIPTION, "From your Camera")
+
+        takePhotoUri = activity.contentResolver.insert(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values
+        )
+
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, takePhotoUri)
+
+        takePhotoLauncher?.launch(intent)
     }
 
     private fun initManualPermission() {
