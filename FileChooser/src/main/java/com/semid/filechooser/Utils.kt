@@ -40,7 +40,7 @@ object Utils {
         val endWith = "jpg"
 
         val timeStamp =
-            SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+            SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Calendar.getInstance().time)
 
         val file = File(getBaseFolder(context).toString() + "/" + timeStamp + "." + endWith)
         return Uri.fromFile(file)

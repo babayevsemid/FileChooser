@@ -61,7 +61,7 @@ class FileChooserFragment(private var fragment: Fragment) {
     private fun initReadPermissionAndNext() {
         permissionLauncher =
             fragment.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-                fragment.lifecycleScope.launch {
+                fragment.lifecycleScope.launchWhenStarted {
                     _permissionSharedFlow.emit(isGranted)
                 }
 
@@ -87,7 +87,7 @@ class FileChooserFragment(private var fragment: Fragment) {
                         Utils.getPath(fragment.context, result.data?.data)
                     )
 
-                    fragment.lifecycleScope.launch {
+                    fragment.lifecycleScope.launchWhenStarted {
                         _fileSharedFlow.emit(fileModel)
                     }
                 }
@@ -104,7 +104,7 @@ class FileChooserFragment(private var fragment: Fragment) {
                         Utils.getPath(fragment.context, result.data?.data)
                     )
 
-                    fragment.lifecycleScope.launch {
+                    fragment.lifecycleScope.launchWhenStarted {
                         _fileSharedFlow.emit(fileModel)
                     }
                 }
@@ -126,7 +126,7 @@ class FileChooserFragment(private var fragment: Fragment) {
                             file.path
                         )
 
-                        fragment.lifecycleScope.launch {
+                        fragment.lifecycleScope.launchWhenStarted {
                             _fileSharedFlow.emit(fileModel)
                         }
                     }
@@ -157,7 +157,7 @@ class FileChooserFragment(private var fragment: Fragment) {
     private fun initManualPermission() {
         manualPermissionLauncher =
             fragment.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-                fragment.lifecycleScope.launch {
+                fragment.lifecycleScope.launchWhenStarted {
                     _permissionSharedFlow.emit(isGranted)
                 }
             }
@@ -173,7 +173,7 @@ class FileChooserFragment(private var fragment: Fragment) {
                         isGranted = false
                 }
 
-                fragment.lifecycleScope.launch {
+                fragment.lifecycleScope.launchWhenStarted {
                     _permissionMultiSharedFlow.emit(isGranted)
                 }
             }

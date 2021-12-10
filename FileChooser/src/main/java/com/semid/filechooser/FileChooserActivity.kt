@@ -127,7 +127,7 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
                                 file.path
                             )
 
-                            activity.lifecycleScope.launch {
+                            activity.lifecycleScope.launchWhenStarted {
                                 _fileSharedFlow.emit(fileModel)
                             }
                         }
