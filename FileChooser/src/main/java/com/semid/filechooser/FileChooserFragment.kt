@@ -1,19 +1,28 @@
 package com.semid.filechooser
 
 import android.Manifest
+import android.R.attr
 import android.app.Activity.RESULT_OK
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.database.Cursor
 import android.net.Uri
 import android.os.StrictMode
 import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import kotlinx.coroutines.*
 import java.io.File
+import android.os.Environment
+import android.R.attr.data
+
+import android.graphics.Bitmap
+import androidx.core.content.FileProvider
+import java.io.IOException
 
 
 class FileChooserFragment(private var fragment: Fragment) {
@@ -36,7 +45,7 @@ class FileChooserFragment(private var fragment: Fragment) {
     private var chooseVideoLauncher: ActivityResultLauncher<Intent>? = null
     private var takePhotoLauncher: ActivityResultLauncher<Intent>? = null
 
-    private var takePhotoUri: Uri? = null
+    private var takePhotoPath: String? = null
 
     init {
         initChoosePhoto()
@@ -64,7 +73,6 @@ class FileChooserFragment(private var fragment: Fragment) {
         permissionLauncher =
             fragment.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
                 _permissionLiveData.value = isGranted
-
 
                 if (isGranted) {
                     when (fileTypeEnum) {
@@ -111,19 +119,17 @@ class FileChooserFragment(private var fragment: Fragment) {
     private fun initTakePhoto() {
         takePhotoLauncher =
             fragment.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-
                 if (it.resultCode == RESULT_OK) {
 
                     val fileModel = FileModel(
                         FileTypeEnum.TAKE_PHOTO,
-                        Utils.getPath(fragment.context, takePhotoUri)
+                        takePhotoPath
                     )
 
                     _fileLiveData.value = fileModel
                 }
             }
     }
-
 
     private fun choosePhoto() {
         val intent = Intent(Intent.ACTION_PICK)
@@ -142,22 +148,26 @@ class FileChooserFragment(private var fragment: Fragment) {
             val builder = StrictMode.VmPolicy.Builder()
             StrictMode.setVmPolicy(builder.build())
 
-            val values = ContentValues()
-            values.put(MediaStore.Images.Media.TITLE, Utils.generateFileName())
-            values.put(MediaStore.Images.Media.DESCRIPTION, "From your Camera")
+            fragment.context?.let { context ->
+                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
+                    takePictureIntent.resolveActivity(it.packageManager)
+                        ?.also {
+                            val photoFile: File? = Utils.createImageFile(context = context)
 
-            takePhotoUri = it.contentResolver.insert(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values
-            )
+                            takePhotoPath = photoFile?.absolutePath
 
-            takePhotoUri = it.contentResolver.insert(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values
-            )
+                            photoFile?.also { file ->
+                                val photoURI = FileProvider.getUriForFile(
+                                    context, "com.example.android.fileprovider", file
+                                )
 
-            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, takePhotoUri)
+                                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                            }
+                        }
+                }
 
-            takePhotoLauncher?.launch(intent)
+                takePhotoLauncher?.launch(intent)
+            }
         }
     }
 
@@ -193,8 +203,8 @@ class FileChooserFragment(private var fragment: Fragment) {
 
     companion object {
         fun deleteTakeFiles(context: Context) {
-            Utils.getBaseFolder(context).listFiles()?.forEach {
-                it.delete()
+            Utils.getBaseFolder(context)?.listFiles()?.forEach {
+                deleteFile(it.absolutePath)
             }
         }
 

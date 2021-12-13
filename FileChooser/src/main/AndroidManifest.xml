@@ -3,6 +3,7 @@
     package="com.semid.filechooser">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<!--    <uses-permission android:name="android.permission.CAMERA" />-->
 
     <queries>
         <intent>
@@ -12,5 +13,16 @@
 
     <application
         android:requestLegacyExternalStorage="true"
-        tools:targetApi="q" />
+        tools:targetApi="q" >
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.android.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
+    </application>
 </manifest>

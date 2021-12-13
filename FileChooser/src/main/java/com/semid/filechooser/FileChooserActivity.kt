@@ -11,7 +11,9 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.lifecycle.LiveData
+import java.io.File
 
 
 class FileChooserActivity(private var activity: AppCompatActivity) {
@@ -34,7 +36,7 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
     private var chooseVideoLauncher: ActivityResultLauncher<Intent>? = null
     private var takePhotoLauncher: ActivityResultLauncher<Intent>? = null
 
-    private var takePhotoUri: Uri? = null
+    private var takePhotoPath: String? = null
 
     init {
         initChoosePhoto()
@@ -111,7 +113,7 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
                     if (result.resultCode == Activity.RESULT_OK) {
                         val fileModel = FileModel(
                             FileTypeEnum.TAKE_PHOTO,
-                            Utils.getPath(activity, takePhotoUri)
+                            takePhotoPath
                         )
 
                         _fileLiveData.value = fileModel
@@ -133,21 +135,29 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
     }
 
     private fun takePhoto() {
-        val builder = StrictMode.VmPolicy.Builder()
-        StrictMode.setVmPolicy(builder.build())
+        activity.applicationContext.let { context ->
+            val builder = StrictMode.VmPolicy.Builder()
+            StrictMode.setVmPolicy(builder.build())
 
-        val values = ContentValues()
-        values.put(MediaStore.Images.Media.TITLE, Utils.generateFileName())
-        values.put(MediaStore.Images.Media.DESCRIPTION, "From your Camera")
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
+                takePictureIntent.resolveActivity(context.packageManager)
+                    ?.also {
+                        val photoFile: File? = Utils.createImageFile(context = context)
 
-        takePhotoUri = activity.contentResolver.insert(
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values
-        )
+                        takePhotoPath = photoFile?.absolutePath
 
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, takePhotoUri)
+                        photoFile?.also { file ->
+                            val photoURI = FileProvider.getUriForFile(
+                                context, "com.example.android.fileprovider", file
+                            )
 
-        takePhotoLauncher?.launch(intent)
+                            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                        }
+                    }
+            }
+
+            takePhotoLauncher?.launch(intent)
+        }
     }
 
     private fun initManualPermission() {
