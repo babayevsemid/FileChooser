@@ -2,9 +2,7 @@ package com.semid.filechooser
 
 import android.Manifest
 import android.app.Activity
-import android.content.ContentValues
 import android.content.Intent
-import android.net.Uri
 import android.os.StrictMode
 import android.provider.MediaStore
 import androidx.activity.result.ActivityResultLauncher
@@ -148,7 +146,7 @@ class FileChooserActivity(private var activity: AppCompatActivity) {
 
                         photoFile?.also { file ->
                             val photoURI = FileProvider.getUriForFile(
-                                context, "${context.packageName}.fileprovider", file
+                                context, "${context.packageName}.fileprovider.fileChooser", file
                             )
 
                             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)

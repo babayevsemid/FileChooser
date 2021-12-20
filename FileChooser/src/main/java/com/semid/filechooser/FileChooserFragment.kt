@@ -148,7 +148,7 @@ class FileChooserFragment(private var fragment: Fragment) {
 
                             photoFile?.also { file ->
                                 val photoURI = FileProvider.getUriForFile(
-                                    context, "${context.packageName}.fileprovider", file
+                                    context, "${context.packageName}.fileprovider.fileChooser", file
                                 )
 
                                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
