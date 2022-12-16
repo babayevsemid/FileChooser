@@ -2,8 +2,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.semid.filechooser">
 
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-<!--    <uses-permission android:name="android.permission.CAMERA" />-->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
 
     <queries>
         <intent>
@@ -13,7 +14,7 @@
 
     <application
         android:requestLegacyExternalStorage="true"
-        tools:targetApi="q" >
+        tools:targetApi="q">
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -22,7 +23,7 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"/>
+                android:resource="@xml/provider_paths" />
         </provider>
     </application>
 </manifest>

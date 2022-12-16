@@ -4,10 +4,15 @@ import android.Manifest
 import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.StrictMode
 import android.provider.MediaStore
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.registerForActivityResult
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
@@ -32,7 +37,9 @@ class FileChooserFragment(private var fragment: Fragment) {
     private var manualMultiPermissionLauncher: ActivityResultLauncher<Array<String>>? = null
 
     private var choosePhotoLauncher: ActivityResultLauncher<Intent>? = null
+    private var choosePhotoLauncherAndroid13: ActivityResultLauncher<PickVisualMediaRequest>? = null
     private var chooseVideoLauncher: ActivityResultLauncher<Intent>? = null
+    private var chooseVideoLauncherAndroid13: ActivityResultLauncher<PickVisualMediaRequest>? = null
     private var takePhotoLauncher: ActivityResultLauncher<Intent>? = null
 
     private var takePhotoPath: String? = null
@@ -51,7 +58,12 @@ class FileChooserFragment(private var fragment: Fragment) {
         when (fileTypeEnum) {
             FileTypeEnum.CHOOSE_PHOTO, FileTypeEnum.CHOOSE_VIDEO -> {
                 FileChooserFragment@ this.fileTypeEnum = fileTypeEnum
-                permissionLauncher?.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+
+                if (isAndroidVersion13Higher) {
+                    choose()
+                }else {
+                    permissionLauncher?.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+                }
             }
             FileTypeEnum.TAKE_PHOTO -> {
                 takePhoto()
@@ -65,45 +77,81 @@ class FileChooserFragment(private var fragment: Fragment) {
                 _permissionLiveData.value = isGranted
 
                 if (isGranted) {
-                    when (fileTypeEnum) {
-                        FileTypeEnum.CHOOSE_PHOTO -> choosePhoto()
-                        FileTypeEnum.CHOOSE_VIDEO -> chooseVideo()
-                        else -> {
-
-                        }
-                    }
+                    choose()
                 }
             }
+    }
+
+    private fun choose() {
+        when (fileTypeEnum) {
+            FileTypeEnum.CHOOSE_PHOTO -> choosePhoto()
+            FileTypeEnum.CHOOSE_VIDEO -> chooseVideo()
+            else -> {
+
+            }
+        }
     }
 
     private fun initChoosePhoto() {
-        choosePhotoLauncher =
-            fragment.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == RESULT_OK) {
+        if (isAndroidVersion13Higher) {
+            choosePhotoLauncherAndroid13 =
+                fragment.registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+                    if (uri != null) {
+                        val fileModel = FileModel(
+                            FileTypeEnum.CHOOSE_PHOTO,
+                            Utils.getPath(fragment.context, uri)
+                        )
 
-                    val fileModel = FileModel(
-                        FileTypeEnum.CHOOSE_PHOTO,
-                        Utils.getPath(fragment.context, result.data?.data)
-                    )
-
-                    _fileLiveData.value = fileModel
+                        _fileLiveData.value = fileModel
+                    } else {
+                        Log.d("PhotoPicker", "No media selected")
+                    }
                 }
-            }
+        } else {
+            choosePhotoLauncher =
+                fragment.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                    if (result.resultCode == RESULT_OK) {
+
+                        val fileModel = FileModel(
+                            FileTypeEnum.CHOOSE_PHOTO,
+                            Utils.getPath(fragment.context, result.data?.data)
+                        )
+
+                        _fileLiveData.value = fileModel
+                    }
+                }
+        }
     }
 
     private fun initChooseVideo() {
-        chooseVideoLauncher =
-            fragment.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == RESULT_OK) {
+        if (isAndroidVersion13Higher) {
+            chooseVideoLauncherAndroid13 =
+                fragment.registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+                    if (uri != null) {
+                        val fileModel = FileModel(
+                            FileTypeEnum.CHOOSE_PHOTO,
+                            Utils.getPath(fragment.context, uri)
+                        )
 
-                    val fileModel = FileModel(
-                        FileTypeEnum.CHOOSE_VIDEO,
-                        Utils.getPath(fragment.context, result.data?.data)
-                    )
-
-                    _fileLiveData.value = fileModel
+                        _fileLiveData.value = fileModel
+                    } else {
+                        Log.d("PhotoPicker", "No media selected")
+                    }
                 }
-            }
+        } else {
+            chooseVideoLauncher =
+                fragment.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                    if (result.resultCode == RESULT_OK) {
+
+                        val fileModel = FileModel(
+                            FileTypeEnum.CHOOSE_VIDEO,
+                            Utils.getPath(fragment.context, result.data?.data)
+                        )
+
+                        _fileLiveData.value = fileModel
+                    }
+                }
+        }
     }
 
     private fun initTakePhoto() {
@@ -122,15 +170,23 @@ class FileChooserFragment(private var fragment: Fragment) {
     }
 
     private fun choosePhoto() {
-        val intent = Intent(Intent.ACTION_PICK)
-        intent.type = "image/*"
-        choosePhotoLauncher?.launch(intent)
+        if (isAndroidVersion13Higher) {
+            choosePhotoLauncherAndroid13?.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        } else {
+            val intent = Intent(Intent.ACTION_PICK)
+            intent.type = "image/*"
+            choosePhotoLauncher?.launch(intent)
+        }
     }
 
     private fun chooseVideo() {
-        val intent = Intent(Intent.ACTION_PICK)
-        intent.type = "video/*"
-        chooseVideoLauncher?.launch(intent)
+        if (isAndroidVersion13Higher) {
+            chooseVideoLauncherAndroid13?.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly))
+        } else {
+            val intent = Intent(Intent.ACTION_PICK)
+            intent.type = "video/*"
+            chooseVideoLauncher?.launch(intent)
+        }
     }
 
     private fun takePhoto() {
@@ -190,6 +246,8 @@ class FileChooserFragment(private var fragment: Fragment) {
     fun multiRequestPermission(array: Array<String>) {
         manualMultiPermissionLauncher?.launch(array)
     }
+
+   private val isAndroidVersion13Higher get() = Build.VERSION.SDK_INT >= 33
 
     companion object {
         fun deleteTakeFiles(context: Context) {
